@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="theme-color" content="#1e3a8a">
+<title>Registro de Atrasos</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #f1f5f9;
+    color: #1e293b;
+    padding-bottom: 40px;
+    min-height: 100vh;
+  }
+  header {
+    background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+    color: white;
+    padding: 18px 16px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 8px rgba(0,0,0,.15);
+  }
+  header h1 { font-size: 1.2rem; }
+  header p { font-size: .78rem; opacity: .85; margin-top: 3px; }
+
+  .container { padding: 16px; max-width: 600px; margin: 0 auto; }
+
+  .tabs {
+    display: flex;
+    background: white;
+    border-radius: 12px;
+    padding: 4px;
+    margin-bottom: 16px;
+    box-shadow: 0 1px 3px rgba(0,0,0,.08);
+  }
+  .tab {
+    flex: 1;
+    padding: 10px 6px;
+    text-align: center;
+    border-radius: 8px;
+    font-size: .85rem;
+    font-weight: 600;
+    color: #64748b;
+    cursor: pointer;
+    border: none;
+    background: transparent;
+  }
+  .tab.active { background: #3b82f6; color: white; }
+
+  .card {
+    background: white;
+    border-radius: 14px;
+    padding: 16px;
+    margin-bottom: 12px;
+    box-shadow: 0 1px 4px rgba(0,0,0,.06);
+  }
+
+  .form-group { margin-bottom: 12px; }
+  .form-group label {
+    display: block;
+    font-size: .85rem;
+    font-weight: 600;
+    margin-bottom: 6px;
+    color: #475569;
+  }
+  .form-group input, .form-group select, .form-group textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 10px;
+    font-size: 1rem;
+    font-family: inherit;
+    background: #f8fafc;
+  }
+  .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+    outline: none;
+    border-color: #3b82f6;
+    background: white;
+  }
+
+  .btn {
+    width: 100%;
+    padding: 13px;
+    border: none;
+    border-radius: 10px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    text-decoration: none;
+    color: white;
+  }
+  .btn:active { transform: scale(.98); }
+  .btn-primary { background: #3b82f6; }
+  .btn-success { background: #22c55e; }
+  .btn-whats { background: #25D366; }
+  .btn-sms { background: #f59e0b; }
+  .btn-call { background: #8b5cf6; }
+  .btn-outline { background: white; color: #3b82f6; border: 1.5px solid #3b82f6; }
+  .btn-sm { padding: 9px 12px; font-size: .82rem; }
+
+  .aluno-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px;
+    border-bottom: 1px solid #f1f5f9;
+    gap: 8px;
+  }
+  .aluno-item:last-child { border-bottom: none; }
+  .aluno-info { flex: 1; min-width: 0; }
+  .aluno-info h4 { font-size: .95rem; margin-bottom: 3px; }
+  .aluno-info p { font-size: .78rem; color: #64748b; word-break: break-word; }
+  .aluno-actions { display: flex; gap: 6px; flex-shrink: 0; }
+
+  .icon-btn {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 1rem;
+  }
+  .icon-btn.edit { background: #dbeafe; color: #2563eb; }
+  .icon-btn.delete { background: #fee2e2; color: #dc2626; }
+
+  .atraso-item {
+    background: white;
+    border-radius: 12px;
+    padding: 14px;
+    margin-bottom: 10px;
+    box-shadow: 0 1px 4px rgba(0,0,0,.06);
+    border-left: 4px solid #f59e0b;
+  }
+  .atraso-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 8px;
+    gap: 8px;
+  }
+  .atraso-header h4 { font-size: 1rem; }
+  .atraso-header .data { font-size: .78rem; color: #64748b; }
+  .atraso-motivo {
+    font-size: .85rem;
+    color: #475569;
+    background: #f8fafc;
+    padding: 8px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+  }
+  .atraso-footer {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+  }
+  .atraso-footer .btn { padding: 10px 8px; font-size: .8rem; }
+
+  .empty { text-align: center; padding: 40px 20px; color: #94a3b8; }
+  .empty-icon { font-size: 3rem; margin-bottom: 12px; opacity: .5; }
+
+  .badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: .7rem;
+    font-weight: 600;
+    background: #fef3c7;
+    color: #92400e;
+    white-space: nowrap;
+  }
+
+  .count-badge {
+    background: #ef4444;
+    color: white;
+    font-size: .68rem;
+    padding: 2px 7px;
+    border-radius: 10px;
+    margin-left: 6px;
+  }
+
+  .toast {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: #1e293b;
+    color: white;
+    padding: 12px 22px;
+    border-radius: 10px;
+    font-size: .9rem;
+    opacity: 0;
+    transition: .3s;
+    z-index: 1000;
+    box-shadow: 0 4px 12px rgba(0,0,0,.2);
+    max-width: 90%;
+    text-align: center;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+  .toast.success { background: #16a34a; }
+  .toast.error { background: #dc2626; }
+
+  .search-box {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 10px;
+    font-size: .95rem;
+    margin-bottom: 12px;
+    background: white;
+  }
+
+  .hidden { display: none !important; }
+
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.5);
+    display: flex;
+    align-items: flex-end;
+    z-index: 200;
+  }
+  .modal {
+    background: white;
+    width: 100%;
+    max-height: 92vh;
+    overflow-y: auto;
+    border-radius: 20px 20px 0 0;
+    padding: 20px;
+    padding-bottom: 30px;
+  }
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+  }
+  .modal-header h3 { font-size: 1.05rem; }
+  .close-btn {
+    background: #f1f5f9;
+    border: none;
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    font-size: 1.1rem;
+    cursor: pointer;
+    color: #64748b;
+  }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .stat-card {
+    background: white;
+    padding: 14px;
+    border-radius: 12px;
+    box-shadow: 0 1px 4px rgba(0,0,0,.06);
+  }
+  .stat-card .num { font-size: 1.6rem; font-weight: 700; color: #3b82f6; }
+  .stat-card .label { font-size: .75rem; color: #64748b; margin-top: 3px; }
+
+  .btn-group {
+    display: flex;
+    gap: 6px;
+    margin-top: 8px;
+  }
+  .btn-group .btn { flex: 1; }
+
+  .info-box {
+    background: #dbeafe;
+    color: #1e40af;
+    padding: 10px 12px;
+    border-radius: 10px;
+    font-size: .8rem;
+    margin-bottom: 12px;
+    line-height: 1.4;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>📋 Registro de Atrasos</h1>
+  <p>Controle de pontualidade escolar</p>
+</header>
+
+<div class="container">
+
+  <div class="tabs">
+    <button class="tab active" data-tab="registrar">📝 Registrar</button>
+    <button class="tab" data-tab="alunos">👥 Alunos</button>
+    <button class="tab" data-tab="historico">📊 Histórico</button>
+  </div>
+
+  <!-- ABA REGISTRAR -->
+  <div id="tab-registrar">
+    <div class="card">
+      <div class="form-group">
+        <label>👤 Aluno *</label>
+        <select id="selAluno">
+          <option value="">Selecione o aluno</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>📅 Data</label>
+        <input type="date" id="inpData">
+      </div>
+      <div class="form-group">
+        <label>⏰ Horário de chegada</label>
+        <input type="time" id="inpHora">
+      </div>
+      <div class="form-group">
+        <label>📝 Motivo (opcional)</label>
+        <textarea id="inpMotivo" rows="2" placeholder="Ex: Trânsito, consulta médica..."></textarea>
+      </div>
+      <button class="btn btn-primary" onclick="registrarAtraso()">✅ Registrar Atraso</button>
+    </div>
+  </div>
+
+  <!-- ABA ALUNOS -->
+  <div id="tab-alunos" class="hidden">
+    <button class="btn btn-primary" style="margin-bottom:12px" onclick="abrirModalAluno()">➕ Novo Aluno</button>
+    <input type="text" class="search-box" id="buscaAluno" placeholder="🔍 Buscar aluno..." oninput="renderAlunos()">
+    <div class="card" id="listaAlunos" style="padding:0"></div>
+  </div>
+
+  <!-- ABA HISTÓRICO -->
+  <div id="tab-historico" class="hidden">
+    <div class="stats-grid" id="statsGrid"></div>
+    <input type="text" class="search-box" id="buscaHistorico" placeholder="🔍 Buscar por aluno..." oninput="renderHistorico()">
+    <div id="listaAtrasos"></div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ==================== ESTADO ====================
+let alunos = [];
+let atrasos = [];
+let alunoEditandoId = null;
+
+try {
+  alunos = JSON.parse(localStorage.getItem('alunos_app') || '[]');
+  atrasos = JSON.parse(localStorage.getItem('atrasos_app') || '[]');
+} catch (e) {
+  alunos = [];
+  atrasos = [];
+}
+
+function salvar() {
+  try {
+    localStorage.setItem('alunos_app', JSON.stringify(alunos));
+    localStorage.setItem('atrasos_app', JSON.stringify(atrasos));
+  } catch (e) {
+    toast('Erro ao salvar dados', 'error');
+  }
+}
+
+function gerarId() {
+  return Date.now().toString(36) + Math.random().toString(36).substring(2, 7);
+}
+
+// ==================== TOAST ====================
+function toast(msg, tipo) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'toast show ' + (tipo || 'success');
+  clearTimeout(window._toastTimer);
+  window._toastTimer = setTimeout(() => el.classList.remove('show'), 2800);
+}
+
+// ==================== TABS ====================
+document.querySelectorAll('.tab').forEach(btn => {
+  btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+});
+
+function switchTab(tab) {
+  document.querySelectorAll('.tab').forEach(t => {
+    t.classList.toggle('active', t.dataset.tab === tab);
+  });
+  document.querySelectorAll('[id^="tab-"]').forEach(t => t.classList.add('hidden'));
+  document.getElementById('tab-' + tab).classList.remove('hidden');
+
+  if (tab === 'registrar') carregarSelectAlunos();
+  if (tab === 'alunos') renderAlunos();
+  if (tab === 'historico') renderHistorico();
+}
+
+// ==================== TELEFONE ====================
+function limparTelefone(tel) {
+  return String(tel || '').replace(/\D/g, '');
+}
+
+// Normaliza para formato internacional (Brasil 55 + DDD + número)
+function normalizarTelefone(tel) {
+  let t = limparTelefone(tel);
+  if (!t) return '';
+  // Remove zero inicial
+  if (t.startsWith('0')) t = t.substring(1);
+  // Se tem 10 ou 11 dígitos, é nacional — adiciona 55
+  if (t.length === 10 || t.length === 11) t = '55' + t;
+  // Se tem 12 ou 13 dígitos mas não começa com 55, pode já estar com código
+  return t;
+}
+
+function formatarTelefoneExibicao(tel) {
+  let t = limparTelefone(tel);
+  if (t.startsWith('55') && t.length > 11) t = t.substring(2);
+  if (t.length === 11) return `(${t.slice(0,2)}) ${t.slice(2,7)}-${t.slice(7)}`;
+  if (t.length === 10) return `(${t.slice(0,2)}) ${t.slice(2,6)}-${t.slice(6)}`;
+  return t || '—';
+}
+
+// ==================== ALUNOS ====================
+function carregarSelectAlunos() {
+  const sel = document.getElementById('selAluno');
+  const valorAtual = sel.value;
+  sel.innerHTML = '<option value="">Selecione o aluno</option>';
+
+  const ordenados = [...alunos].sort((a, b) => a.nome.localeCompare(b.nome));
+  ordenados.forEach(a => {
+    const opt = document.createElement('option');
+    opt.value = a.id;
+    opt.textContent = a.nome + (a.turma ? ' — ' + a.turma : '');
+    sel.appendChild(opt);
+  });
+
+  if (valorAtual) sel.value = valorAtual;
+}
+
+function abrirModalAluno(id) {
+  alunoEditandoId = id || null;
+  const aluno = id ? alunos.find(a => a.id === id) : null;
+
+  const modal = document.createElement('div');
+  modal.className = 'modal-overlay';
+  modal.id = 'modalAluno';
+  modal.innerHTML = `
+    <div class="modal">
+      <div class="modal-header">
+        <h3>${id ? '✏️ Editar Aluno' : '➕ Novo Aluno'}</h3>
+        <button class="close-btn" onclick="fecharModalAluno()">✕</button>
+      </div>
+      <div class="form-group">
+        <label>Nome do aluno *</label>
+        <input type="text" id="mNome" value="${aluno ? aluno.nome : ''}" placeholder="Nome completo">
+      </div>
+      <div class="form-group">
+        <label>Turma / Série</label>
+        <input type="text" id="mTurma" value="${aluno ? aluno.turma : ''}" placeholder="Ex: 8º Ano A">
+      </div>
+      <div class="form-group">
+        <label>Nome do responsável *</label>
+        <input type="text" id="mResponsavel" value="${aluno ? aluno.responsavel : ''}" placeholder="Nome do responsável">
+      </div>
+      <div class="form-group">
+        <label>Telefone com DDD *</label>
+        <input type="tel" id="mTelefone" value="${aluno ? formatarTelefoneExibicao(aluno.telefone) : ''}" placeholder="(11) 99999-9999" inputmode="numeric">
+        <small style="color:#64748b;font-size:.75rem;display:block;margin-top:4px">Digite com DDD. Ex: 11999999999</small>
+      </div>
+      <button class="btn btn-primary" onclick="salvarAluno()">💾 Salvar</button>
+    </div>
+  `;
+  document.body.appendChild(modal);
+
+  setTimeout(() => document.getElementById('mNome').focus(), 100);
+}
+
+function fecharModalAluno() {
+  const m = document.getElementById('modalAluno');
+  if (m) m.remove();
+  alunoEditandoId = null;
+}
+
+function salvarAluno() {
+  const nome = document.getElementById('mNome').value.trim();
+  const turma = document.getElementById('mTurma').value.trim();
+  const responsavel = document.getElementById('mResponsavel').value.trim();
+  const telefoneRaw = document.getElementById('mTelefone').value;
+  const telefone = normalizarTelefone(telefoneRaw);
+
+  if (!nome) return toast('Informe o nome do aluno', 'error');
+  if (!responsavel) return toast('Informe o responsável', 'error');
+  if (!telefone || telefone.length < 12) {
+    return toast('Telefone inválido — use DDD + número', 'error');
+  }
+
+  if (alunoEditandoId) {
+    const a = alunos.find(x => x.id === alunoEditandoId);
+    if (a) Object.assign(a, { nome, turma, responsavel, telefone });
+    toast('Aluno atualizado!');
+  } else {
+    alunos.push({ id: gerarId(), nome, turma, responsavel, telefone });
+    toast('Aluno cadastrado!');
+  }
+
+  salvar();
+  fecharModalAluno();
+  renderAlunos();
+  carregarSelectAlunos();
+}
+
+function excluirAluno(id) {
+  if (!confirm('Excluir este aluno e todos os seus registros?')) return;
+  alunos = alunos.filter(a => a.id !== id);
+  atrasos = atrasos.filter(a => a.alunoId !== id);
+  salvar();
+  renderAlunos();
+  carregarSelectAlunos();
+  toast('Aluno excluído');
+}
+
+function renderAlunos() {
+  const buscaEl = document.getElementById('buscaAluno');
+  const busca = buscaEl ? buscaEl.value.toLowerCase() : '';
+
+  const lista = alunos
+    .filter(a => a.nome.toLowerCase().includes(busca) || (a.turma || '').toLowerCase().includes(busca))
+    .sort((a, b) => a.nome.localeCompare(b.nome));
+
+  const el = document.getElementById('listaAlunos');
+
+  if (lista.length === 0) {
+    el.innerHTML = `<div class="empty"><div class="empty-icon">👥</div><p>Nenhum aluno ${busca ? 'encontrado' : 'cadastrado'}</p></div>`;
+    return;
+  }
+
+  el.innerHTML = lista.map(a => {
+    const qtd = atrasos.filter(x => x.alunoId === a.id).length;
+    return `
+      <div class="aluno-item">
+        <div class="aluno-info">
+          <h4>${escapeHtml(a.nome)} ${qtd > 0 ? `<span class="count-badge">${qtd}</span>` : ''}</h4>
+          <p>${escapeHtml(a.turma || 'Sem turma')} • ${escapeHtml(a.responsavel)}</p>
+          <p>📞 ${formatarTelefoneExibicao(a.telefone)}</p>
+        </div>
+        <div class="aluno-actions">
+          <button class="icon-btn edit" onclick="abrirModalAluno('${a.id}')">✏️</button>
+          <button class="icon-btn delete" onclick="excluirAluno('${a.id}')">🗑️</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+// ==================== ATRASOS ====================
+function registrarAtraso() {
+  const alunoId = document.getElementById('selAluno').value;
+  const data = document.getElementById('inpData').value;
+  const hora = document.getElementById('inpHora').value;
+  const motivo = document.getElementById('inpMotivo').value.trim();
+
+  if (!alunoId) return toast('Selecione um aluno', 'error');
+  if (!data) return toast('Informe a data', 'error');
+  if (!hora) return toast('Informe o horário', 'error');
+
+  atrasos.unshift({
+    id: gerarId(),
+    alunoId,
+    data,
+    hora,
+    motivo,
+    criadoEm: new Date().toISOString()
+  });
+
+  salvar();
+  toast('✅ Atraso registrado!');
+
+  document.getElementById('inpMotivo').value = '';
+}
+
+function excluirAtraso(id) {
+  if (!confirm('Excluir este registro?')) return;
+  atrasos = atrasos.filter(a => a.id !== id);
+  salvar();
+  renderHistorico();
+  toast('Registro excluído');
+}
+
+function renderHistorico() {
+  const buscaEl = document.getElementById('buscaHistorico');
+  const busca = buscaEl ? buscaEl.value.toLowerCase() : '';
+
+  const hoje = new Date().toISOString().split('T')[0];
+  const atrasosHoje = atrasos.filter(a => a.data === hoje).length;
+  const semana = new Date();
+  semana.setDate(semana.getDate() - 7);
+  const atrasosSemana = atrasos.filter(a => new Date(a.data) >= semana).length;
+
+  document.getElementById('statsGrid').innerHTML = `
+    <div class="stat-card"><div class="num">${alunos.length}</div><div class="label">Alunos</div></div>
+    <div class="stat-card"><div class="num">${atrasos.length}</div><div class="label">Total atrasos</div></div>
+    <div class="stat-card"><div class="num">${atrasosHoje}</div><div class="label">Hoje</div></div>
+    <div class="stat-card"><div class="num">${atrasosSemana}</div><div class="label">Últimos 7 dias</div></div>
+  `;
+
+  const lista = atrasos.filter(a => {
+    if (!busca) return true;
+    const aluno = alunos.find(x => x.id === a.alunoId);
+    return aluno && aluno.nome.toLowerCase().includes(busca);
+  });
+
+  const el = document.getElementById('listaAtrasos');
+
+  if (lista.length === 0) {
+    el.innerHTML = `<div class="empty"><div class="empty-icon">📭</div><p>Nenhum atraso registrado</p></div>`;
+    return;
+  }
+
+  el.innerHTML = lista.map(a => {
+    const aluno = alunos.find(x => x.id === a.alunoId);
+    if (!aluno) return '';
+    const partes = a.data.split('-');
+    const dataFmt = `${partes[2]}/${partes[1]}/${partes[0]}`;
+
+    return `
+      <div class="atraso-item">
+        <div class="atraso-header">
+          <div>
+            <h4>${escapeHtml(aluno.nome)}</h4>
+            <div class="data">📅 ${dataFmt} às ${a.hora}</div>
+          </div>
+          <span class="badge">${escapeHtml(aluno.turma || 'Sem turma')}</span>
+        </div>
+        ${a.motivo ? `<div class="atraso-motivo">📝 ${escapeHtml(a.motivo)}</div>` : ''}
+        <div class="atraso-footer">
+          <button class="btn btn-whats btn-sm" onclick="abrirWhatsApp('${a.id}')">📱 WhatsApp</button>
+          <button class="btn btn-sms btn-sm" onclick="abrirSMS('${a.id}')">💬 SMS</button>
+          <button class="btn btn-call btn-sm" onclick="ligarResponsavel('${a.id}')">📞 Ligar</button>
+          <button class="btn btn-outline btn-sm" onclick="excluirAtraso('${a.id}')" style="border-color:#dc2626;color:#dc2626">🗑️</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+// ==================== MENSAGEM ====================
+function montarMensagem(atraso, aluno) {
+  const p = atraso.data.split('-');
+  const dataFmt = `${p[2]}/${p[1]}/${p[0]}`;
+  let msg = `Olá, ${aluno.responsavel}!\n\n`;
+  msg += `Informamos que o(a) aluno(a) ${aluno.nome}`;
+  if (aluno.turma) msg += ` da turma ${aluno.turma}`;
+  msg += ` chegou atrasado(a) hoje.\n\n`;
+  msg += `📅 Data: ${dataFmt}\n`;
+  msg += `⏰ Horário: ${atraso.hora}\n`;
+  if (atraso.motivo) msg += `📝 Motivo: ${atraso.motivo}\n`;
+  msg += `\nAtenciosamente,\nCoordenação Escolar`;
+  return msg;
+}
+
+// ==================== ABRIR WHATSAPP ====================
+// Estratégia robusta com fallback: tenta whatsapp:// depois https://wa.me
+function abrirWhatsApp(atrasoId) {
+  const atraso = atrasos.find(x => x.id === atrasoId);
+  if (!atraso) return toast('Registro não encontrado', 'error');
+  const aluno = alunos.find(x => x.id === atraso.alunoId);
+  if (!aluno) return toast('Aluno não encontrado', 'error');
+
+  const tel = normalizarTelefone(aluno.telefone);
+  if (!tel) return toast('Telefone do responsável inválido', 'error');
+
+  const msg = montarMensagem(atraso, aluno);
+  const msgEnc = encodeURIComponent(msg);
+
+  // Link universal do WhatsApp (funciona em web e app)
+  const urlApp = `whatsapp://send?phone=${tel}&text=${msgEnc}`;
+  const urlWeb = `https://wa.me/${tel}?text=${msgEnc}`;
+  const urlApi = `https://api.whatsapp.com/send?phone=${tel}&text=${msgEnc}`;
+
+  // Detecta se é mobile
+  const isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+
+  if (isMobile) {
+    // Tenta abrir o app nativo primeiro; se não conseguir, cai no web
+    const inicio = Date.now();
+    window.location.href = urlApp;
+
+    setTimeout(() => {
+      // Se o usuário ainda está na página após 1.2s, o app não abriu
+      if (Date.now() - inicio < 2000 && !document.hidden) {
+        window.open(urlWeb, '_blank');
+      }
+    }, 1200);
+  } else {
+    // Desktop: abre direto no WhatsApp Web
+    window.open(urlWeb, '_blank');
+  }
+}
+
+// ==================== ABRIR SMS ====================
+function abrirSMS(atrasoId) {
+  const atraso = atrasos.find(x => x.id === atrasoId);
+  if (!atraso) return toast('Registro não encontrado', 'error');
+  const aluno = alunos.find(x => x.id === atraso.alunoId);
+  if (!aluno) return toast('Aluno não encontrado', 'error');
+
+  const tel = limparTelefone(aluno.telefone);
+  if (!tel) return toast('Telefone inválido', 'error');
+
+  const msg = montarMensagem(atraso, aluno);
+
+  // Android usa ?body=  |  iOS usa &body=
+  // A forma mais compatível é usar o separador conforme o SO
+  const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+  let url;
+  if (isIOS) {
+    url = `sms:${tel}&body=${encodeURIComponent(msg)}`;
+  } else {
+    // Android / genérico
+    url = `sms:${tel}?body=${encodeURIComponent(msg)}`;
+  }
+
+  // Fallback: se nada abrir em 1.5s, tenta formato alternativo
+  const inicio = Date.now();
+  window.location.href = url;
+
+  setTimeout(() => {
+    if (Date.now() - inicio < 2500 && !document.hidden) {
+      // Última tentativa: formato sem query
+      window.location.href = `sms:${tel}`;
+    }
+  }, 1500);
+}
+
+// ==================== LIGAR ====================
+function ligarResponsavel(atrasoId) {
+  const atraso = atrasos.find(x => x.id === atrasoId);
+  if (!atraso) return;
+  const aluno = alunos.find(x => x.id === atraso.alunoId);
+  if (!aluno) return;
+
+  const tel = limparTelefone(aluno.telefone);
+  if (!tel) return toast('Telefone inválido', 'error');
+
+  window.location.href = `tel:${tel}`;
+}
+
+// ==================== UTILS ====================
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+// ==================== INIT ====================
+function init() {
+  const hoje = new Date();
+  const isoHoje = hoje.toISOString().split('T')[0];
+  document.getElementById('inpData').value = isoHoje;
+
+  const hh = String(hoje.getHours()).padStart(2, '0');
+  const mm = String(hoje.getMinutes()).padStart(2, '0');
+  document.getElementById('inpHora').value = `${hh}:${mm}`;
+
+  carregarSelectAlunos();
+  renderAlunos();
+}
+
+// Aguarda DOM
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', init);
+} else {
+  init();
+}
+</script>
+</body>
+</html>
